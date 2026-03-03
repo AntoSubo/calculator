@@ -3,40 +3,89 @@ using System.Windows.Controls;
 
 namespace calculator
 {
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
     public partial class MainWindow : Window
     {
-        private CalculatorEngine _engine;
+        double firstNumber = 0; // хранит число, которое было до нажатия операции (например, нажали 5 +, сохраняем 5)
 
+        char operation = ' '; //хранит знак операции(например, пользователь нажал "+")
+
+        bool StartNewNumber = true; //флаг: true = следующая цифра начнет новое число, false = добавляем цифру к текущему
         public MainWindow()
         {
             InitializeComponent();
-            _engine = new CalculatorEngine();
         }
 
         private void Number_Click(object sender, RoutedEventArgs e)
         {
-            var button = (Button)sender;
-            _engine.ProcessDigit(button.Content.ToString());
-            Display.Text = _engine.GetDisplayText();
+            Button button = (Button)sender;
+
+            if (StartNewNumber)
+            {
+                Display.Text = button.Content.ToString();
+                StartNewNumber = false;
+            }
+            else
+            {
+                if (Display.Text.Length < 15)
+                {
+                    Display.Text += button.Content.ToString();
+                }
+
+            }
+
         }
 
         private void Operation_Click(object sender, RoutedEventArgs e)
         {
-            var button = (Button)sender;
-            _engine.ProcessOperation(button.Content.ToString()[0]);
-            Display.Text = _engine.GetDisplayText();
-        }
+            Button button = (Button)sender;
 
-        private void Equals_Click(object sender, RoutedEventArgs e)
-        {
-            _engine.ProcessEquals();
-            Display.Text = _engine.GetDisplayText();
+            firstNumber = Convert.ToDouble(Display.Text);
+            operation = button.Content.ToString()[0];
+            StartNewNumber = true;
         }
 
         private void Clear_Click(object sender, RoutedEventArgs e)
         {
-            _engine.Clear();
-            Display.Text = _engine.GetDisplayText();
+            Display.Text = "0";
+            firstNumber = 0;
+            operation = ' ';
+            StartNewNumber = true;
+        }
+
+        private void Equals_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+            if (operation == ' ') return;
+
+            double secondNumber = Convert.ToDouble(Display.Text);
+            double result = 0;
+
+            switch (operation)
+            {
+                case '+':
+                    result = firstNumber + secondNumber; break;
+                case '-':
+                    result = firstNumber - secondNumber; break;
+                case '*':
+                    result = firstNumber * secondNumber; break;
+                case '/':
+                    if (secondNumber > 0)
+                    {
+                        result = firstNumber / secondNumber;
+                    }
+                    else
+                    {
+                        Display.Text = "Ошибка";
+                        return;
+                    }
+                    break;
+            }
+            Display.Text = result.ToString();
+            StartNewNumber = true;
+            operation = ' ';
         }
     }
 }
